@@ -36,10 +36,106 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 		this._topLeft    = L.latLng(topleft);
 		this._topRight   = L.latLng(topright);
 		this._bottomLeft = L.latLng(bottomleft);
+		this._bottomRight = L.latLng();
+
+		// Init Rotate Marker
+		//this.initRotateMarker();
 
 		L.setOptions(this, options);
 	},
 
+	initMoveMarker: function() {
+
+		var moveIcon = L.icon({
+			iconUrl   : 'move.png',
+			className : "moveIcon",
+			iconSize  : [24, 24],
+			iconAnchor: [24, 24]
+		});
+
+		// move icon will be always located at the middle between marker 2 et marker 3
+		var moveIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
+		this._moveMarker = L.marker(moveIconCoordinates, {draggable: true, icon: moveIcon}).addTo(map);
+
+		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
+		this._moveMarker.on('dragstart', function(ev){
+
+			// When drag starts, try to determine the initial (X, Y) coordinates of each marker from the moveMarker.
+			var moveMarkerX = this._map.latLngToLayerPoint(ev.target.getLatLng()).x;
+			var moveMarkerY = this._map.latLngToLayerPoint(ev.target.getLatLng()).y;
+
+			var initialMarker1X = this._map.latLngToLayerPoint(marker1.getLatLng()).x;
+			var initialMarker1Y = this._map.latLngToLayerPoint(marker1.getLatLng()).y;
+			initialMarkerDiff1X = initialMarker1X - moveMarkerX;
+			initialMarkerDiff1Y = initialMarker1Y - moveMarkerY;
+
+			var initialMarker2X = this._map.latLngToLayerPoint(marker2.getLatLng()).x;
+			var initialMarker2Y = this._map.latLngToLayerPoint(marker2.getLatLng()).y;
+			initialMarkerDiff2X = initialMarker2X - moveMarkerX;
+			initialMarkerDiff2Y = initialMarker2Y - moveMarkerY;
+
+			var initialMarker3X = this._map.latLngToLayerPoint(marker3.getLatLng()).x;
+			var initialMarker3Y = this._map.latLngToLayerPoint(marker3.getLatLng()).y;
+			initialMarkerDiff3X = initialMarker3X - moveMarkerX;
+			initialMarkerDiff3Y = initialMarker3Y - moveMarkerY;
+
+		});
+		this._moveMarker.on('drag', (ev) => {
+			
+			// During the grad, always adujet the position of the 3 markers to keep the initial offset.
+			var targetLatLng = ev.target.getLatLng();
+			var targetLatLngPx = this._map.latLngToLayerPoint(targetLatLng).x;
+			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
+
+			var newMarker1X = targetLatLngPx + initialMarkerDiff1X;
+			var newMarker1Y = targetLatLngPy + initialMarkerDiff1Y;
+			var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
+
+			var newMarker2X = targetLatLngPx + initialMarkerDiff2X;
+			var newMarker2Y = targetLatLngPy + initialMarkerDiff2Y;
+			var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
+
+			var newMarker3X = targetLatLngPx + initialMarkerDiff3X;
+			var newMarker3Y = targetLatLngPy + initialMarkerDiff3Y;
+			var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
+
+			// Update marker corners location
+			marker1.setLatLng(newMarker1LatLng); 
+			marker2.setLatLng(newMarker2LatLng); 
+			marker3.setLatLng(newMarker3LatLng); 
+
+			this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
+		});
+
+	},
+
+	initRotateMarker: function() {
+
+		var moveIcon = L.icon({
+			iconUrl: 'rotate.png',
+			className: "rotateIcon",
+			iconSize  : [24, 24],
+			iconAnchor: [24, 24]
+		});
+
+		// move icon will be always located at the middle between marker 2 et marker 3
+		var moveIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
+		this._rotateMarker = L.marker(moveIconCoordinates, {draggable: false, icon: moveIcon}).addTo(map);
+
+		this._rotateMarker.on('mousedown', (e) => {
+			// to do
+		});
+		this._rotateMarker.on('click', (e) => {
+			var rotateMarkerDomEl = document.getElementsByClassName('leaflet-image-layer')[0];
+			degree = -1;
+			rotateMarkerDomEl.style['transform-origin'] = "center center";
+			rotateMarkerDomEl.style['-moz-transform'] += 'rotate(' + degree + 'deg)';
+			rotateMarkerDomEl.style['-webkit-transform'] += 'rotate(' + degree + 'deg)';
+			rotateMarkerDomEl.style['-o-transform'] += 'rotate(' + degree + 'deg)';
+			rotateMarkerDomEl.style['-ms-transform'] += 'rotate(' + degree + 'deg)';
+		});
+
+	},
 
 	onAdd: function (map) {
 		if (!this._image) {
@@ -112,6 +208,8 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			return;
 		}
 
+		this._map.doubleClickZoom.disable();
+
 		// Project control points to container-pixel coordinates
 		var pxTopLeft    = this._map.latLngToLayerPoint(this._topLeft);
 		var pxTopRight   = this._map.latLngToLayerPoint(this._topRight);
@@ -119,6 +217,7 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 		// Infer coordinate of bottom right
 		var pxBottomRight = pxTopRight.subtract(pxTopLeft).add(pxBottomLeft);
+		this._bottomRight = this._map.layerPointToLatLng(L.point(pxBottomRight));
 
 		// pxBounds is mostly for positioning the <div> container
 		var pxBounds = L.bounds([pxTopLeft, pxTopRight, pxBottomLeft, pxBottomRight]);
@@ -157,14 +256,35 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			'scale(' + scaleX + ', ' + scaleY + ') ';
 	},
 
+	getGeoJsonMapCoordinates() {
+		let geoJson = {
+			"type": "MultiPoint",
+			"coordinates": [
+				[this._topLeft.lng, this._topLeft.lat],
+				[this._topRight.lng, this._topRight.lat],
+				[this._bottomLeft.lng, this._bottomLeft.lat],
+				[this._bottomRight.lng, this._bottomRight.lat],
+			]
+		};
+		console.log("Image GeoJson coordinates : ", geoJson);
+		return geoJson;
+	},
 
 	reposition: function(topleft, topright, bottomleft) {
 		this._topLeft    = L.latLng(topleft);
 		this._topRight   = L.latLng(topright);
 		this._bottomLeft = L.latLng(bottomleft);
 		this._reset();
-	},
 
+		// Reposition move marker centered between marker 2 et 3
+		if (this._moveMarker) {
+			let moveIconCoordinates = this.middlePoint(this._topRight.lat, this._topRight.lng, this._bottomLeft.lat, this._bottomLeft.lng);
+			this._moveMarker.setLatLng(moveIconCoordinates);
+		}
+		if (this._rotateMarker) {
+			this._rotateMarker.setLatLng(moveIconCoordinates); 
+		}
+	},
 
 	setUrl: function (url) {
 		this._url = url;
@@ -173,7 +293,30 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			this._rawImage.src = url;
 		}
 		return this;
+	},
+
+	middlePoint: function(lat1, lng1, lat2, lng2) {
+		if (typeof (Number.prototype.toRad) === "undefined") {
+			Number.prototype.toRad = function () {
+				return this * Math.PI / 180;
+			}
+		}
+		if (typeof (Number.prototype.toDeg) === "undefined") {
+			Number.prototype.toDeg = function () {
+				return this * (180 / Math.PI);
+			}
+		}
+		var dLng = (lng2 - lng1).toRad();
+		lat1 = lat1.toRad();
+		lat2 = lat2.toRad();
+		lng1 = lng1.toRad();
+		var bX = Math.cos(lat2) * Math.cos(dLng);
+		var bY = Math.cos(lat2) * Math.sin(dLng);
+		var lat3 = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + bX) * (Math.cos(lat1) + bX) + bY * bY));
+		var lng3 = lng1 + Math.atan2(bY, Math.cos(lat1) + bX);
+		return [lat3.toDeg(), lng3.toDeg()];
 	}
+
 });
 
 /* 🍂factory imageOverlay.rotated(imageUrl: String|HTMLImageElement|HTMLCanvasElement, topleft: LatLng, topright: LatLng, bottomleft: LatLng, options?: ImageOverlay options)
