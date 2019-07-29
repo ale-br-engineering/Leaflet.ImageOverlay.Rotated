@@ -64,7 +64,8 @@
 			attribution: "Historical building plan &copy; <a href='http://www.ign.es'>Instituto Geográfico Nacional de España</a>"
 		});
 		
-		//overlay.initMoveMarker();
+		overlay.initMoveMarker();
+		overlay.initRotateMarker();
 		
 		function repositionImage() {
 			overlay.reposition(marker1.getLatLng(), marker2.getLatLng(), marker3.getLatLng());
