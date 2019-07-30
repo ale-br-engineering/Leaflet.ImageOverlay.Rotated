@@ -121,11 +121,14 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 		this._rotateMarker = L.marker(moveIconCoordinates, {draggable: true, icon: moveIcon}).addTo(map);
 
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
-		var moveMarkerX, moveMarkerY;
-		var degree = -1;
+		var moveMarkerX, moveMarkerY, radWithInitialAngle;
 
-		this._rotateMarker.on('mousedown', (e) => {
+		this._rotateMarker.on('dragstart', (ev) => {
 			// to do
+
+			var targetLatLng = ev.target.getLatLng();
+			var targetLatLngPx = this._map.latLngToLayerPoint(targetLatLng).x;
+			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
 
 			// get initial marker's distance from image's center
 			moveMarkerX = this._map.latLngToLayerPoint(this._moveMarker._latlng).x;
@@ -146,32 +149,34 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			initialMarkerDiff3X = initialMarker3X - moveMarkerX;
 			initialMarkerDiff3Y = initialMarker3Y - moveMarkerY;
 
+			// Get initial angle in the plane between the positive x-axis and ray from (0,0) to mouse's position (at first click), in radians
+			radWithInitialAngle = Math.atan2(targetLatLngPx - moveMarkerX, targetLatLngPy - moveMarkerY);
+
 		});
 
-		this._rotateMarker.on('click', (e) => {
-			var rotateMarkerDomEl = document.getElementsByClassName('leaflet-image-layer')[0];
+		this._rotateMarker.on('drag', (ev) => {
 
-			// css rotation
-			rotateMarkerDomEl.style['transform-origin'] = "center center";
-			rotateMarkerDomEl.style['-moz-transform'] += 'rotate(' + degree + 'deg)';
-			rotateMarkerDomEl.style['-webkit-transform'] += 'rotate(' + degree + 'deg)';
-			rotateMarkerDomEl.style['-o-transform'] += 'rotate(' + degree + 'deg)';
-			rotateMarkerDomEl.style['-ms-transform'] += 'rotate(' + degree + 'deg)';
+			var targetLatLng = ev.target.getLatLng();
+			var targetLatLngPx = this._map.latLngToLayerPoint(targetLatLng).x;
+			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
 
-			// JS uses radian
-			var DtoR = Math.PI/180;
+			// Get the angle in the plane between the positive x-axis and ray from (0,0) to mouse's position (during drag), in radians
+			var rad = Math.atan2(targetLatLngPx - moveMarkerX, targetLatLngPy - moveMarkerY);
+
+			// Angle value to rotate image
+			var rotateAngle = -1 * (rad-radWithInitialAngle);
 			
-			// Setting new marker's position, using the moveMarker's coordinates at image's center
-			var newMarker1X = moveMarkerX + (initialMarkerDiff1X*Math.cos(degree * DtoR) - initialMarkerDiff1Y*Math.sin(degree * DtoR));
-			var newMarker1Y = moveMarkerY + (initialMarkerDiff1Y*Math.cos(degree * DtoR) + initialMarkerDiff1X*Math.sin(degree * DtoR));
+			// Set new marker's position, using the moveMarker's coordinates at image's center
+			var newMarker1X = moveMarkerX + (initialMarkerDiff1X*Math.cos(rotateAngle) - initialMarkerDiff1Y*Math.sin(rotateAngle));
+			var newMarker1Y = moveMarkerY + (initialMarkerDiff1Y*Math.cos(rotateAngle) + initialMarkerDiff1X*Math.sin(rotateAngle));
 			var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
 
-			var newMarker2X = moveMarkerX + (initialMarkerDiff2X*Math.cos(degree * DtoR) - initialMarkerDiff2Y*Math.sin(degree * DtoR));
-			var newMarker2Y = moveMarkerY + (initialMarkerDiff2Y*Math.cos(degree * DtoR) + initialMarkerDiff2X*Math.sin(degree * DtoR));
+			var newMarker2X = moveMarkerX + (initialMarkerDiff2X*Math.cos(rotateAngle) - initialMarkerDiff2Y*Math.sin(rotateAngle));
+			var newMarker2Y = moveMarkerY + (initialMarkerDiff2Y*Math.cos(rotateAngle) + initialMarkerDiff2X*Math.sin(rotateAngle));
 			var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
 
-			var newMarker3X = moveMarkerX + (initialMarkerDiff3X*Math.cos(degree * DtoR) - initialMarkerDiff3Y*Math.sin(degree * DtoR));
-			var newMarker3Y = moveMarkerY + (initialMarkerDiff3Y*Math.cos(degree * DtoR) + initialMarkerDiff3X*Math.sin(degree * DtoR));
+			var newMarker3X = moveMarkerX + (initialMarkerDiff3X*Math.cos(rotateAngle) - initialMarkerDiff3Y*Math.sin(rotateAngle));
+			var newMarker3Y = moveMarkerY + (initialMarkerDiff3Y*Math.cos(rotateAngle) + initialMarkerDiff3X*Math.sin(rotateAngle));
 			var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
 
 			// Update marker corners location
