@@ -108,20 +108,19 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 	initRotateMarker: function() {
 
-		var moveIcon = L.icon({
+		var rotateIcon = L.icon({
 			iconUrl: 'rotate.png',
 			className: "rotateIcon",
 			iconSize  : [24, 24],
 			iconAnchor: [24, 24]
 		});
 
-		// move icon will be always located at the middle between marker 2 et marker 3
 		var middleM1M3 = this.middlePoint(marker1.getLatLng().lat, marker1.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
-		var moveIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, middleM1M3[0], middleM1M3[1])
-		this._rotateMarker = L.marker(moveIconCoordinates, {draggable: true, icon: moveIcon}).addTo(map);
+		var rotateIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, middleM1M3[0], middleM1M3[1])
+		this._rotateMarker = L.marker(rotateIconCoordinates, {draggable: true, icon: rotateIcon}).addTo(map);
 
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
-		var moveMarkerX, moveMarkerY, radWithInitialAngle;
+		var centerX, centerY, radWithInitialAngle;
 
 		this._rotateMarker.on('dragstart', (ev) => {
 			// to do
@@ -130,27 +129,29 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			var targetLatLngPx = this._map.latLngToLayerPoint(targetLatLng).x;
 			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
 
-			// get initial marker's distance from image's center
-			moveMarkerX = this._map.latLngToLayerPoint(this._moveMarker._latlng).x;
-			moveMarkerY = this._map.latLngToLayerPoint(this._moveMarker._latlng).y;
+			var center = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
 
+			// get initial marker's distance from image's center
+			centerX = this._map.latLngToLayerPoint(center).x;
+			centerY = this._map.latLngToLayerPoint(center).y;
+			
 			var initialMarker1X = this._map.latLngToLayerPoint(marker1.getLatLng()).x;
 			var initialMarker1Y = this._map.latLngToLayerPoint(marker1.getLatLng()).y;
-			initialMarkerDiff1X = initialMarker1X - moveMarkerX;
-			initialMarkerDiff1Y = initialMarker1Y - moveMarkerY;
+			initialMarkerDiff1X = initialMarker1X - centerX;
+			initialMarkerDiff1Y = initialMarker1Y - centerY;
 
 			var initialMarker2X = this._map.latLngToLayerPoint(marker2.getLatLng()).x;
 			var initialMarker2Y = this._map.latLngToLayerPoint(marker2.getLatLng()).y;
-			initialMarkerDiff2X = initialMarker2X - moveMarkerX;
-			initialMarkerDiff2Y = initialMarker2Y - moveMarkerY;
+			initialMarkerDiff2X = initialMarker2X - centerX;
+			initialMarkerDiff2Y = initialMarker2Y - centerY;
 
 			var initialMarker3X = this._map.latLngToLayerPoint(marker3.getLatLng()).x;
 			var initialMarker3Y = this._map.latLngToLayerPoint(marker3.getLatLng()).y;
-			initialMarkerDiff3X = initialMarker3X - moveMarkerX;
-			initialMarkerDiff3Y = initialMarker3Y - moveMarkerY;
+			initialMarkerDiff3X = initialMarker3X - centerX;
+			initialMarkerDiff3Y = initialMarker3Y - centerY;
 
 			// Get initial angle in the plane between the positive x-axis and ray from (0,0) to mouse's position (at first click), in radians
-			radWithInitialAngle = Math.atan2(targetLatLngPx - moveMarkerX, targetLatLngPy - moveMarkerY);
+			radWithInitialAngle = Math.atan2(targetLatLngPx - centerX, targetLatLngPy - centerY);
 
 		});
 
@@ -161,22 +162,22 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
 
 			// Get the angle in the plane between the positive x-axis and ray from (0,0) to mouse's position (during drag), in radians
-			var rad = Math.atan2(targetLatLngPx - moveMarkerX, targetLatLngPy - moveMarkerY);
+			var rad = Math.atan2(targetLatLngPx - centerX, targetLatLngPy - centerY);
 
 			// Angle value to rotate image
 			var rotateAngle = -1 * (rad-radWithInitialAngle);
 			
 			// Set new marker's position, using the moveMarker's coordinates at image's center
-			var newMarker1X = moveMarkerX + (initialMarkerDiff1X*Math.cos(rotateAngle) - initialMarkerDiff1Y*Math.sin(rotateAngle));
-			var newMarker1Y = moveMarkerY + (initialMarkerDiff1Y*Math.cos(rotateAngle) + initialMarkerDiff1X*Math.sin(rotateAngle));
+			var newMarker1X = centerX + (initialMarkerDiff1X*Math.cos(rotateAngle) - initialMarkerDiff1Y*Math.sin(rotateAngle));
+			var newMarker1Y = centerY + (initialMarkerDiff1Y*Math.cos(rotateAngle) + initialMarkerDiff1X*Math.sin(rotateAngle));
 			var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
 
-			var newMarker2X = moveMarkerX + (initialMarkerDiff2X*Math.cos(rotateAngle) - initialMarkerDiff2Y*Math.sin(rotateAngle));
-			var newMarker2Y = moveMarkerY + (initialMarkerDiff2Y*Math.cos(rotateAngle) + initialMarkerDiff2X*Math.sin(rotateAngle));
+			var newMarker2X = centerX + (initialMarkerDiff2X*Math.cos(rotateAngle) - initialMarkerDiff2Y*Math.sin(rotateAngle));
+			var newMarker2Y = centerY + (initialMarkerDiff2Y*Math.cos(rotateAngle) + initialMarkerDiff2X*Math.sin(rotateAngle));
 			var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
 
-			var newMarker3X = moveMarkerX + (initialMarkerDiff3X*Math.cos(rotateAngle) - initialMarkerDiff3Y*Math.sin(rotateAngle));
-			var newMarker3Y = moveMarkerY + (initialMarkerDiff3Y*Math.cos(rotateAngle) + initialMarkerDiff3X*Math.sin(rotateAngle));
+			var newMarker3X = centerX + (initialMarkerDiff3X*Math.cos(rotateAngle) - initialMarkerDiff3Y*Math.sin(rotateAngle));
+			var newMarker3Y = centerY + (initialMarkerDiff3Y*Math.cos(rotateAngle) + initialMarkerDiff3X*Math.sin(rotateAngle));
 			var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
 
 			// Update marker corners location
@@ -187,6 +188,84 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
 		});
 
+	},
+
+	initResizeMarker: function() {
+
+		var resizeIcon = L.icon({
+			iconUrl: 'resize.png',
+			className: "resizeIcon",
+			iconSize  : [24, 24],
+			iconAnchor: [24, 24]
+		});
+
+		var resizeIconCoordinates = this.middlePoint(marker1.getLatLng().lat, marker1.getLatLng().lng, marker2.getLatLng().lat, marker2.getLatLng().lng);
+		this._resizeMarker = L.marker(resizeIconCoordinates, {draggable: true, icon: resizeIcon}).addTo(map);
+
+		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
+		var centerX, centerY, initialDistToCenter;
+
+		this._resizeMarker.on('dragstart', (ev) => {
+			// to do
+
+			var targetLatLng = ev.target.getLatLng();
+			var initialDragX = this._map.latLngToLayerPoint(targetLatLng).x;
+			var initialDragY = this._map.latLngToLayerPoint(targetLatLng).y;
+
+			var center = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
+
+			// get initial marker's distance from image's center
+			centerX = this._map.latLngToLayerPoint(center).x;
+			centerY = this._map.latLngToLayerPoint(center).y;
+
+			var initialMarker1X = this._map.latLngToLayerPoint(marker1.getLatLng()).x;
+			var initialMarker1Y = this._map.latLngToLayerPoint(marker1.getLatLng()).y;
+			initialMarkerDiff1X = initialMarker1X - centerX;
+			initialMarkerDiff1Y = initialMarker1Y - centerY;
+
+			var initialMarker2X = this._map.latLngToLayerPoint(marker2.getLatLng()).x;
+			var initialMarker2Y = this._map.latLngToLayerPoint(marker2.getLatLng()).y;
+			initialMarkerDiff2X = initialMarker2X - centerX;
+			initialMarkerDiff2Y = initialMarker2Y - centerY;
+
+			var initialMarker3X = this._map.latLngToLayerPoint(marker3.getLatLng()).x;
+			var initialMarker3Y = this._map.latLngToLayerPoint(marker3.getLatLng()).y;
+			initialMarkerDiff3X = initialMarker3X - centerX;
+			initialMarkerDiff3Y = initialMarker3Y - centerY;
+
+			initialDistToCenter = Math.sqrt((initialDragX-centerX)**2 + (initialDragY-centerY)**2)
+
+		});
+
+		this._resizeMarker.on('drag', (ev) => {
+
+			var targetLatLng = ev.target.getLatLng();
+			var targetLatLngPx = this._map.latLngToLayerPoint(targetLatLng).x;
+			var targetLatLngPy = this._map.latLngToLayerPoint(targetLatLng).y;
+
+			var distToCenter = Math.sqrt((targetLatLngPx-centerX)**2 + (targetLatLngPy-centerY)**2);
+			var ratio = distToCenter/initialDistToCenter;
+			
+			// Set new marker's position, using the moveMarker's coordinates at image's center
+			var newMarker1X = centerX + initialMarkerDiff1X * ratio;
+			var newMarker1Y = centerY + initialMarkerDiff1Y * ratio;
+			var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
+
+			var newMarker2X = centerX + initialMarkerDiff2X * ratio;
+			var newMarker2Y = centerY + initialMarkerDiff2Y * ratio;
+			var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
+
+			var newMarker3X = centerX + initialMarkerDiff3X * ratio;
+			var newMarker3Y = centerY + initialMarkerDiff3Y * ratio;
+			var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
+
+			// Update marker corners location
+			marker1.setLatLng(newMarker1LatLng); 
+			marker2.setLatLng(newMarker2LatLng); 
+			marker3.setLatLng(newMarker3LatLng); 
+
+			this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
+		});
 	},
 
 	onAdd: function (map) {
@@ -337,6 +416,10 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			let middleTop = this.middlePoint(this._topLeft.lat, this._topLeft.lng, this._bottomLeft.lat, this._bottomLeft.lng)
 			let moveIconCoordinates = this.middlePoint(middleTop[0], middleTop[1], this._topRight.lat, this._topRight.lng)
 			this._rotateMarker.setLatLng(moveIconCoordinates); 
+		}
+		if (this._resizeMarker) {
+			let resizeIconCoordinates = this.middlePoint(this._topLeft.lat, this._topLeft.lng, this._topRight.lat, this._topRight.lng)
+			this._resizeMarker.setLatLng(resizeIconCoordinates); 
 		}
 	},
 

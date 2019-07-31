@@ -1,17 +1,24 @@
 .moveIcon {
     cursor: move !important;
     background: white;
-    /* margin-left: -30px !important; */
     margin-left: 0px !important;
-    padding: 5px;
+    padding: 3px;
     border-radius: 7px;
     outline: none;
 }
-/* .rotateIcon {
-    cursor: hand !important;
-    margin-left: 15px !important;
+.rotateIcon {
+    cursor: grab !important;
     background: white;
-    padding: 5px;
+    margin-left: 0px !important;
+    padding: 3px;
     border-radius: 7px;
     outline: none;
-} */
+}
+.resizeIcon {
+    cursor: nesw-resize !important;
+    background: white;
+    margin-left: 0px !important;
+    padding: 3px;
+    border-radius: 7px;
+    outline: none;
+}
