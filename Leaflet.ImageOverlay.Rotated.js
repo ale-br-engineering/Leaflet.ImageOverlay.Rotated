@@ -44,7 +44,7 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 	initMoveMarker: function() {
 
 		var moveIcon = L.icon({
-			iconUrl   : 'move.svg',
+			iconUrl   : 'move.png',
 			className : "moveIcon",
 			iconSize  : [24, 24],
 			iconAnchor: [0, 15]
@@ -120,14 +120,6 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 		var rotateIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, middleM1M3[0], middleM1M3[1])
 		this._rotateMarker = L.marker(rotateIconCoordinates, {draggable: true, icon: rotateIcon}).addTo(map);
 
-		// var initialCenter = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
-
-		// var initiallatlngs = [
-		// 	[rotateIconCoordinates[0], rotateIconCoordinates[1]],
-		// 	[initialCenter[0], initialCenter[1]]
-		// ]
-		// this._polyline = L.polyline(initiallatlngs, {color: "black"}).addTo(map);
-
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
 		var center, centerX, centerY, radWithInitialAngle;
 
@@ -195,14 +187,6 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 			this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
 
-			// var rotateCenter = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
-
-			// var latlngs = [
-			// 	[this._rotateMarker.getLatLng().lat, this._rotateMarker.getLatLng().lng],
-			// 	[rotateCenter[0], rotateCenter[1]]
-			// ]
-			// if (this._polyline){map.removeLayer(this._polyline);}
-			// this._polyline = L.polyline(latlngs, {color: "black"}).addTo(map);
 		});
 
 	},
@@ -433,15 +417,6 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			let middleTop = this.middlePoint(this._topLeft.lat, this._topLeft.lng, this._bottomLeft.lat, this._bottomLeft.lng)
 			let rotateIconCoordinates = this.middlePoint(middleTop[0], middleTop[1], this._topRight.lat, this._topRight.lng)
 			this._rotateMarker.setLatLng(rotateIconCoordinates); 
-
-			// let center = this.middlePoint(this._topRight.lat, this._topRight.lng, this._bottomLeft.lat, this._bottomLeft.lng);
-
-			// let latlngs = [
-			// 	[rotateIconCoordinates[0], rotateIconCoordinates[1]],
-			// 	[center[0], center[1]]
-			// ]
-			// if(this._polyline){map.removeLayer(this._polyline);}
-			// this._polyline = L.polyline(latlngs, {color: "black"}).addTo(map);
 		}
 		if (this._resizeMarker) {
 			let resizeIconCoordinates = this.middlePoint(this._topLeft.lat, this._topLeft.lng, this._topRight.lat, this._topRight.lng)
