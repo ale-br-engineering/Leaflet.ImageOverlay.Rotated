@@ -50,9 +50,14 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			iconAnchor: [0, 15]
 		});
 
+		
+
 		// move icon will be always located at the middle between marker 2 et marker 3
 		var moveIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
 		this._moveMarker = L.marker(moveIconCoordinates, {draggable: true, icon: moveIcon}).addTo(map);
+
+		var move = document.getElementsByClassName("moveIcon");
+		move[0].style.display = "none";
 
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
 		this._moveMarker.on('dragstart', function(ev){
@@ -115,16 +120,21 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			iconAnchor: [0, 15]
 		});
 
+		var rotateValue = document.getElementById("rotateValue");
 
 		var middleM1M3 = this.middlePoint(marker1.getLatLng().lat, marker1.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
 		var rotateIconCoordinates = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, middleM1M3[0], middleM1M3[1])
 		this._rotateMarker = L.marker(rotateIconCoordinates, {draggable: true, icon: rotateIcon}).addTo(map);
 
+		var rotate = document.getElementsByClassName("rotateIcon");
+		rotate[0].style.display = "none";
+
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
 		var center, centerX, centerY, radWithInitialAngle;
 
 		this._rotateMarker.on('dragstart', (ev) => {
-			// to do	
+			
+			
 			center = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
 
 			var targetLatLng = ev.target.getLatLng();
@@ -151,6 +161,7 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			initialMarkerDiff3Y = initialMarker3Y - centerY;
 
 			// Get initial angle in the plane between the positive x-axis and ray from (0,0) to mouse's position (at first click), in radians
+			// https://fr.wikipedia.org/wiki/Atan2
 			radWithInitialAngle = Math.atan2(targetLatLngPx - centerX, targetLatLngPy - centerY);
 
 		});
@@ -166,6 +177,14 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 			// Angle value to rotate image
 			var rotateAngle = radWithInitialAngle - rad;
+
+			// Display angle in UI
+			var displayAngle = (Math.round((rotateAngle*180/Math.PI)*100))/100;
+			if (displayAngle > 0) {
+				rotateValue.value = displayAngle;
+			} else {
+				rotateValue.value = displayAngle+360;
+			}
 			
 			// Set new marker's position, using the moveMarker's coordinates at image's center
 			var newMarker1X = centerX + (initialMarkerDiff1X*Math.cos(rotateAngle) - initialMarkerDiff1Y*Math.sin(rotateAngle));
@@ -200,8 +219,13 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 			iconAnchor: [0, 15]
 		});
 
+		var resizeValue = document.getElementById("resizeValue"); 
+
 		var resizeIconCoordinates = this.middlePoint(marker1.getLatLng().lat, marker1.getLatLng().lng, marker2.getLatLng().lat, marker2.getLatLng().lng);
 		this._resizeMarker = L.marker(resizeIconCoordinates, {draggable: true, icon: resizeIcon}).addTo(map);
+
+		var resize = document.getElementsByClassName("resizeIcon");
+		resize[0].style.display = "none";
 
 		var initialMarkerDiff1X, initialMarkerDiff1Y, initialMarkerDiff2X, initialMarkerDiff2Y, initialMarkerDiff3X, initialMarkerDiff3Y;
 		var centerX, centerY, initialDistToCenter;
@@ -246,6 +270,9 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 			var distToCenter = Math.sqrt((targetLatLngPx-centerX)**2 + (targetLatLngPy-centerY)**2);
 			var ratio = distToCenter/initialDistToCenter;
+
+			// Display ratio in UI
+			resizeValue.value = Math.round((ratio*100)*100)/100;
 			
 			// Set new marker's position, using the moveMarker's coordinates at image's center
 			var newMarker1X = centerX + initialMarkerDiff1X * ratio;
@@ -267,6 +294,98 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
 			this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
 		});
+	},
+
+	setRotate: function(value) {
+		var center = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
+
+		// get initial marker's distance from image's center
+		var centerX = this._map.latLngToLayerPoint(center).x;
+		var centerY = this._map.latLngToLayerPoint(center).y;
+			
+		var initialMarker1X = this._map.latLngToLayerPoint(marker1.getLatLng()).x;
+		var initialMarker1Y = this._map.latLngToLayerPoint(marker1.getLatLng()).y;
+		var initialMarkerDiff1X = initialMarker1X - centerX;
+		var initialMarkerDiff1Y = initialMarker1Y - centerY;
+
+		var initialMarker2X = this._map.latLngToLayerPoint(marker2.getLatLng()).x;
+		var initialMarker2Y = this._map.latLngToLayerPoint(marker2.getLatLng()).y;
+		var initialMarkerDiff2X = initialMarker2X - centerX;
+		var initialMarkerDiff2Y = initialMarker2Y - centerY;
+
+		var initialMarker3X = this._map.latLngToLayerPoint(marker3.getLatLng()).x;
+		var initialMarker3Y = this._map.latLngToLayerPoint(marker3.getLatLng()).y;
+		var initialMarkerDiff3X = initialMarker3X - centerX;
+		var initialMarkerDiff3Y = initialMarker3Y - centerY;
+
+		// Angle value to rotate image
+		var rotateAngle = value * Math.PI / 180;
+			
+		// Set new marker's position, using the moveMarker's coordinates at image's center
+		var newMarker1X = centerX + (initialMarkerDiff1X*Math.cos(rotateAngle) - initialMarkerDiff1Y*Math.sin(rotateAngle));
+		var newMarker1Y = centerY + (initialMarkerDiff1Y*Math.cos(rotateAngle) + initialMarkerDiff1X*Math.sin(rotateAngle));
+		var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
+
+		var newMarker2X = centerX + (initialMarkerDiff2X*Math.cos(rotateAngle) - initialMarkerDiff2Y*Math.sin(rotateAngle));
+		var newMarker2Y = centerY + (initialMarkerDiff2Y*Math.cos(rotateAngle) + initialMarkerDiff2X*Math.sin(rotateAngle));
+		var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
+
+		var newMarker3X = centerX + (initialMarkerDiff3X*Math.cos(rotateAngle) - initialMarkerDiff3Y*Math.sin(rotateAngle));
+		var newMarker3Y = centerY + (initialMarkerDiff3Y*Math.cos(rotateAngle) + initialMarkerDiff3X*Math.sin(rotateAngle));
+		var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
+
+		// Update marker corners location
+		marker1.setLatLng(newMarker1LatLng); 
+		marker2.setLatLng(newMarker2LatLng); 
+		marker3.setLatLng(newMarker3LatLng); 
+
+		this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
+	},
+
+	setResize: function(value){
+	
+		var ratio = value/100;
+
+		var center = this.middlePoint(marker2.getLatLng().lat, marker2.getLatLng().lng, marker3.getLatLng().lat, marker3.getLatLng().lng);
+
+		// get initial marker's distance from image's center
+		var centerX = this._map.latLngToLayerPoint(center).x;
+		var centerY = this._map.latLngToLayerPoint(center).y;
+
+		var initialMarker1X = this._map.latLngToLayerPoint(marker1.getLatLng()).x;
+		var initialMarker1Y = this._map.latLngToLayerPoint(marker1.getLatLng()).y;
+		var initialMarkerDiff1X = initialMarker1X - centerX;
+		var initialMarkerDiff1Y = initialMarker1Y - centerY;
+
+		var initialMarker2X = this._map.latLngToLayerPoint(marker2.getLatLng()).x;
+		var initialMarker2Y = this._map.latLngToLayerPoint(marker2.getLatLng()).y;
+		var initialMarkerDiff2X = initialMarker2X - centerX;
+		var initialMarkerDiff2Y = initialMarker2Y - centerY;
+
+		var initialMarker3X = this._map.latLngToLayerPoint(marker3.getLatLng()).x;
+		var initialMarker3Y = this._map.latLngToLayerPoint(marker3.getLatLng()).y;
+		var initialMarkerDiff3X = initialMarker3X - centerX;
+		var initialMarkerDiff3Y = initialMarker3Y - centerY;
+		
+		// Set new marker's position, using the moveMarker's coordinates at image's center
+		var newMarker1X = centerX + initialMarkerDiff1X * ratio;
+		var newMarker1Y = centerY + initialMarkerDiff1Y * ratio;
+		var newMarker1LatLng = this._map.layerPointToLatLng(L.point(newMarker1X, newMarker1Y));
+
+		var newMarker2X = centerX + initialMarkerDiff2X * ratio;
+		var newMarker2Y = centerY + initialMarkerDiff2Y * ratio;
+		var newMarker2LatLng = this._map.layerPointToLatLng(L.point(newMarker2X, newMarker2Y));
+
+		var newMarker3X = centerX + initialMarkerDiff3X * ratio;
+		var newMarker3Y = centerY + initialMarkerDiff3Y * ratio;
+		var newMarker3LatLng = this._map.layerPointToLatLng(L.point(newMarker3X, newMarker3Y));
+
+		// Update marker corners location
+		marker1.setLatLng(newMarker1LatLng); 
+		marker2.setLatLng(newMarker2LatLng); 
+		marker3.setLatLng(newMarker3LatLng); 
+
+		this.reposition(newMarker1LatLng, newMarker2LatLng, newMarker3LatLng)
 	},
 
 	onAdd: function (map) {

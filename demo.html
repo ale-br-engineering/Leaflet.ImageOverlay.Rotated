@@ -23,17 +23,33 @@
 
 	<div id="map" style='width:800px; height:600px;'></div>
 	<div>
-	Overlay opacity:
-	<button onclick='setOverlayOpacity(0.1)'>10%</button>
-	<button onclick='setOverlayOpacity(0.2)'>20%</button>
-	<button onclick='setOverlayOpacity(0.3)'>30%</button>
-	<button onclick='setOverlayOpacity(0.4)'>40%</button>
-	<button onclick='setOverlayOpacity(0.5)'>50%</button>
-	<button onclick='setOverlayOpacity(0.6)'>60%</button>
-	<button onclick='setOverlayOpacity(0.7)'>70%</button>
-	<button onclick='setOverlayOpacity(0.8)'>80%</button>
-	<button onclick='setOverlayOpacity(0.9)'>90%</button>
+		Overlay opacity:
+		<button onclick='setOverlayOpacity(0.1)'>10%</button>
+		<button onclick='setOverlayOpacity(0.2)'>20%</button>
+		<button onclick='setOverlayOpacity(0.3)'>30%</button>
+		<button onclick='setOverlayOpacity(0.4)'>40%</button>
+		<button onclick='setOverlayOpacity(0.5)'>50%</button>
+		<button onclick='setOverlayOpacity(0.6)'>60%</button>
+		<button onclick='setOverlayOpacity(0.7)'>70%</button>
+		<button onclick='setOverlayOpacity(0.8)'>80%</button>
+		<button onclick='setOverlayOpacity(0.9)'>90%</button>
 	</div>
+	<br>
+	<div>
+		<button onclick='toggleMode()'>Hide/Show : move, rotate and resize icons</button>
+		<button onclick="resetPosition()">Reset image</button>
+	</div>
+	<br>
+	<div id="toggleForm">
+		<form>
+			<label>Resize ratio (%) :</label> <br>
+			<input type="text" name="resize" id="resizeValue" value="100" onkeypress="setResize(this.value)">
+			<br>
+			<label>Rotate angle (Deg) :</label> <Br>
+			<input type="text" name="rotate" id="rotateValue" value="0" onkeypress="setRotate(this.value)">
+		</form>
+	</div>
+
 
 	<script type="text/javascript">
 	
@@ -91,6 +107,66 @@
 
 		function setOverlayOpacity(opacity) {
 			overlay.setOpacity(opacity);
+		}
+
+		function resetPosition() {
+			
+			marker1.setLatLng(point1);
+		    marker2.setLatLng(point2);
+			marker3.setLatLng(point3);
+			overlay.reposition(marker1.getLatLng(), marker2.getLatLng(), marker3.getLatLng());
+			document.getElementById("resizeValue").value = 100;
+			document.getElementById("rotateValue").value = 0;
+		}
+
+		function toggleMode(){
+
+			var rotate = document.getElementsByClassName("rotateIcon");
+			var resize = document.getElementsByClassName("resizeIcon");
+			var move = document.getElementsByClassName("moveIcon");
+			var toggleForm = document.getElementById("toggleForm");
+			var markers = document.getElementsByClassName("leaflet-marker-icon");
+			var shadows = document.getElementsByClassName("leaflet-marker-shadow");
+
+			if (rotate[0].style.display === "none") {
+				rotate[0].style.display = "block";
+				resize[0].style.display = "block";
+				move[0].style.display = "block";
+				toggleForm.style.display = "block";
+
+				markers[0].style.display = "none";
+				shadows[0].style.display = "none";
+				markers[1].style.display = "none";
+				shadows[1].style.display = "none";
+				markers[2].style.display = "none";
+				shadows[2].style.display = "none";
+
+			} else {
+				rotate[0].style.display = "none";
+				resize[0].style.display = "none";
+				move[0].style.display = "none";
+				toggleForm.style.display ="none";
+
+				markers[0].style.display = "block";
+				shadows[0].style.display = "block";
+				markers[1].style.display = "block";
+				shadows[1].style.display = "block";
+				markers[2].style.display = "block";
+				shadows[2].style.display = "block";
+  			}
+		};
+
+		function setResize(value) {
+			if (event.keyCode === 13) {
+				if (!value || value === "0") {return;}
+				overlay.setResize(value);
+			}
+		};
+
+		function setRotate(value) {
+			if (event.keyCode === 13) {
+				overlay.setRotate(value);
+			}
 		}
 		
 	</script>
