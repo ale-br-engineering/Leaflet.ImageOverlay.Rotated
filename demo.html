@@ -79,10 +79,14 @@
 			interactive: true,
 			attribution: "Historical building plan &copy; <a href='http://www.ign.es'>Instituto Geográfico Nacional de España</a>"
 		});
-		
-		overlay.initMoveMarker();
-		overlay.initRotateMarker();
-		overlay.initResizeMarker();
+
+		var markers= [];
+		markers[1] = marker1;
+		markers[2] = marker2;
+		markers[3] = marker3;
+		overlay.initMoveMarker(markers, map, 'move.png');
+		overlay.initRotateMarker(markers, map, 'rotate.png');
+		overlay.initResizeMarker(markers, map, 'resize.png');
 		
 		function repositionImage() {
 			overlay.reposition(marker1.getLatLng(), marker2.getLatLng(), marker3.getLatLng());
@@ -109,6 +113,7 @@
 			overlay.setOpacity(opacity);
 		}
 
+		// Reset image's position
 		function resetPosition() {
 			
 			marker1.setLatLng(point1);
@@ -119,6 +124,7 @@
 			document.getElementById("rotateValue").value = 0;
 		}
 
+		// Swap between markers mode and move/rotate/resize mode
 		function toggleMode(){
 
 			var rotate = document.getElementsByClassName("rotateIcon");
